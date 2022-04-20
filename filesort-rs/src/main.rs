@@ -7,7 +7,6 @@ use cursive::traits::*;
 fn main() {
     let mut siv = cursive::default();
 
-    // Some description text. We want it to be long, but not _too_ long.
     let text = "Welcome to filesort!";
 
     // We'll create a dialog with a TextView serving as a title
@@ -18,26 +17,69 @@ fn main() {
                 // Use a DummyView as spacer
                 .child(DummyView.fixed_height(1))
                 // Disabling scrollable means the view cannot shrink.
+                
+                .child(Dialog::new()
+                .title("Input folder: ")
+                // Padding is (left, right, top, bottom)
+                .padding_lrtb(1, 1, 1, 0)
+                .content(
+                    EditView::new()
+                        // Call `show_popup` when the user presses `Enter`
+                        .on_submit(show_popup)
+                        // Give the `EditView` a name so we can refer to it later.
+                        .with_name("name")
+                        // Wrap this in a `ResizedView` with a fixed width.
+                        // Do this _after_ `with_name` or the name will point to the
+                        // `ResizedView` instead of `EditView`!
+                        .fixed_width(20),
+                )
+                .button("Ok", |s| {
+                    // This will run the given closure, *ONLY* if a view with the
+                    // correct type and the given name is found.
+                    let name = s
+                        .call_on_name("name", |view: &mut EditView| {
+                            // We can return content from the closure!
+                            view.get_content()
+                        })
+                        .unwrap();
+    
+                    // Run the next step
+                    show_popup(s, &name);
+                }))
 
-                .child(TextView::new("Input folder path:"))
-                .child(EditView::new()
-                    // TODO Make below verify existance
-                    // .on_submit(show_popup)
-                    .with_name("instr"))
-                .child(TextView::new("Output folder path:"))
-                .child(EditView::new()
-                    // TODO Make below verify existance
-                    // .on_submit(show_popup)
-                    .with_name("outstr"))
+
+                .child(Dialog::new()
+                .title("Output folder:")
+                // Padding is (left, right, top, bottom)
+                .padding_lrtb(1, 1, 1, 0)
+                .content(
+                    EditView::new()
+                        // Call `show_popup` when the user presses `Enter`
+                        .on_submit(show_popup)
+                        // Give the `EditView` a name so we can refer to it later.
+                        .with_name("name")
+                        // Wrap this in a `ResizedView` with a fixed width.
+                        // Do this _after_ `with_name` or the name will point to the
+                        // `ResizedView` instead of `EditView`!
+                        .fixed_width(20),
+                )
+                .button("Ok", |s| {
+                    // This will run the given closure, *ONLY* if a view with the
+                    // correct type and the given name is found.
+                    let name = s
+                        .call_on_name("name", |view: &mut EditView| {
+                            // We can return content from the closure!
+                            view.get_content()
+                        })
+                        .unwrap();
+    
+                    // Run the next step
+                    show_popup(s, &name);
+                }))
+                
                 .fixed_width(60),
         )
-        .button("Ok", |s| {
-            {
-                let instr =
-                    s.call_on_name("input", |view: &mut EditView| {
-                        view.get_content()
-                    }).unwrap();
-        })
+        .button("Ok", |s| s.quit())
         .button("Quit", |s| s.quit())
         .h_align(HAlign::Center),
     );
@@ -59,6 +101,7 @@ fn show_popup(s: &mut Cursive, name: &str) {
         s.add_layer(
             Dialog::around(TextView::new(content))
                 .button("Quit", |s| s.quit()),
+                // .button("Ok", |s| s.)
         );
     }
 }
